@@ -52,7 +52,7 @@ void QLMainWindow::createWidgets()
 
     fileModel = new QFileSystemModel(this);
     fileModel->setReadOnly(true);
-    fileModel->setFilter(QDir::NoDotAndDotDot | QDir::Files);
+    fileModel->setFilter(QDir::NoDotAndDotDot | QDir::AllEntries);
 
     splitter = new QSplitter;
 
@@ -100,7 +100,7 @@ void QLMainWindow::createActions()
     delFileAction = new QAction(tr("&Delete File(s)"), this);
     delFileAction->setShortcut(QKeySequence::Delete);
 
-    newFileAction = new QAction(tr("&New File(s)"), this);
+    newFileAction = new QAction(tr("&New File"), this);
 
     renFileAction = new QAction(tr("&Rename File..."), this);
 
