@@ -15,8 +15,12 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        qlmainwindow.cpp
+        qlmainwindow.cpp \
+    qlmisc.cpp \
+    qlproject.cpp
 
-HEADERS  += qlmainwindow.h
+HEADERS  += qlmainwindow.h \
+    qlmisc.h \
+    qlproject.h
 
 FORMS    += qlmainwindow.ui

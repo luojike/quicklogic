@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QModelIndex>
 
+#include "qlproject.h"
+
+
 namespace Ui {
 class QLMainWindow;
 }
@@ -33,6 +36,11 @@ private slots:
     void openFile();
     void showFiles(QModelIndex);
 
+    void analyzeFile();
+    void buildTestBench();
+    void runTestBench();
+    void viewWave();
+
 private:
     Ui::QLMainWindow *ui;
 
@@ -51,10 +59,12 @@ private:
     QAction *delFileAction;
     QAction *renFileAction;
     QAction *openFileAction;
-    QAction *ghdlaFileAction;
-    QAction *ghdleFileAction;
-    QAction *ghdlrFileAction;
-    QAction *gtkwaveFileAction;
+    QAction *analyzeFileAction;
+    QAction *buildTestBenchAction;
+    QAction *runTestBenchAction;
+    QAction *viewWaveAction;
+
+    QLProject *project;
 };
 
 #endif // QLMAINWINDOW_H

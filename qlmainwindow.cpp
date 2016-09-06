@@ -1,6 +1,8 @@
 #include "qlmainwindow.h"
 #include "ui_qlmainwindow.h"
 
+#include "qlmisc.h"
+
 #include <QTreeView>
 #include <QFileSystemModel>
 #include <QDir>
@@ -36,11 +38,30 @@ QLMainWindow::QLMainWindow(QWidget *parent) :
     QApplication::setApplicationName(tr("QuickLogic"));
 
     setWindowTitle(QApplication::applicationName());
+
+    proejct = new QLProject();
 }
 
 QLMainWindow::~QLMainWindow()
 {
     delete ui;
+
+    delete project;
+
+    delete dirView;
+    delete fileView;
+    delete dirModel;
+    delete fileModel;
+    delete splitter;
+
+    delete newFileAction;
+    delete delFileAction;
+    delete renFileAction;
+    delete openFileAction;
+    delete analyzeFileAction;
+    delete buildTestBenchAction;
+    delete runTestBenchAction;
+    delete viewWaveAction;
 }
 
 void QLMainWindow::createWidgets()
@@ -102,20 +123,36 @@ void QLMainWindow::createActions()
 
     newFileAction = new QAction(tr("&New File"), this);
 
-    renFileAction = new QAction(tr("&Rename File..."), this);
+    renFileAction = new QAction(tr("&Change File Name"), this);
 
     openFileAction = new QAction(tr("&Open File"), this);
     openFileAction->setShortcut(QKeySequence::Open);
+
+    analyzeFileAction = new QAction(tr("&Analyze File..."), this);
+
+    buildTestBenchAction = new QAction(tr("&Build executable File..."), this);
+
+    runTestBenchAction = new QAction(tr("&Run File..."), this);
+
+    viewWaveAction = new QAction(tr("&View File..."), this);
+
 }
 
 void QLMainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
     // declate contect menu for the file tree.
     QMenu menu(this);
+
     menu.addAction(openFileAction);
     menu.addAction(delFileAction);
     menu.addAction(renFileAction);
     menu.addAction(newFileAction);
+
+    menu.addAction(analyzeFileAction);
+    menu.addAction(buildTestBenchAction);
+    menu.addAction(runTestBenchAction);
+    menu.addAction(viewWaveAction);
+
     menu.exec(event->globalPos());
 }
 
@@ -131,6 +168,12 @@ void QLMainWindow::createConnections()
     connect(newFileAction, SIGNAL(triggered()), this, SLOT(newFile()));
     connect(dirView, SIGNAL(clicked(QModelIndex)), this,
             SLOT(showFiles(QModelIndex)));
+
+    connect(analyzeFileAction, SIGNAL(triggered()), this, SLOT(analyzeFile()));
+    connect(buildTestBenchAction, SIGNAL(triggered()), this, SLOT(buildTestBench()));
+    connect(runTestBenchAction, SIGNAL(triggered()), this, SLOT(runTestBench()));
+    connect(viewWaveAction, SIGNAL(triggered()), this, SLOT(viewWave()));
+
 }
 
 void QLMainWindow::renFile()
@@ -189,8 +232,8 @@ void QLMainWindow::openFile()
     }
     catch (const std::exception &e)
     {
-        qWarning("Unable to open file %s\n%s", qPrintable(fileName),
-                 qPrintable(e.what()));
+        qWarning("Unable to open file %s\n%s", qUtf8Printable(fileName),
+                 qUtf8Printable(e.what()));
     }
 }
 
@@ -202,32 +245,59 @@ void QLMainWindow::newFile()
         QFile f(fileName);
         f.open(QFile::Text | QFile::Append);
         f.close();
-    }
-}
 
-/*
-void QLMainWindow::tarFiles()
-{
-    // new selected files using qprocess and new command
-    QItemSelectionModel *selectionModel = fileView->selectionModel();
-    QModelIndexList indexList = selectionModel->selectedIndexes();
-    QProcess *myProcess = new QProcess(this);
-    QStringList files;
-    for (const auto &index : indexList) {
-        QFileInfo file(fileModel->filePath(index));
-        if (file.exists() && !files.contains(file.absoluteFilePath()))
-            files.append(file.absoluteFilePath());
-    }
-    QString fileName = QFileDialog::getSaveFileName(
-        this, tr("Save tar file"), QDir::currentPath(), tr("tar files (*.tz)"));
-    if (!fileName.isEmpty()) {
-        myProcess->start("tar -czvf", QStringList() << fileName << files);
+        QProcess *p = new QProcess(this);
+        p->start("gedit", QStringList() << fileName);
     }
 }
-*/
 
 void QLMainWindow::showFiles(QModelIndex index)
 {
     fileView->setRootIndex(
         fileModel->setRootPath(dirModel->fileInfo(index).absoluteFilePath()));
 }
+
+
+void QLMainWindow::analyzeFile()
+{
+    QString fileName = fileModel->filePath(fileView->currentIndex());
+    if (!fileName.isEmpty()) {
+
+        if (!project && !project->getName().isEmpty()) {
+
+            project->callGHDLaOnFile(fileName);
+
+        }
+    }
+}
+
+void QLMainWindow::buildTestBench()
+{
+    if (!project && !project->getName().isEmpty() &&
+            !project->getTestBenchName().isEmpty()) {
+
+        project->callGHDLeOnTestBench();
+
+    }
+}
+
+void QLMainWindow::runTestBench()
+{
+    if (!project && !project->getName().isEmpty() &&
+            !project->getTestBenchName().isEmpty()) {
+
+        project->callGHDLrOnTestBench();
+
+    }
+}
+
+void QLMainWindow::viewWave()
+{
+    if (!project && !project->getName().isEmpty() &&
+            !project->getTestBenchName().isEmpty()) {
+
+        project->callGtkWave();
+
+    }
+}
+
