@@ -2,6 +2,9 @@
 
 #include <QProcess>
 #include <QFile>
+#include <QTextStream>
+
+#include "qlmainwindow.h"
 
 
 QLProject::QLProject()
@@ -69,91 +72,5 @@ void QLProject::delFile(QString fname)
 bool QLProject::hasFile(QString fname)
 {
     return mFileList.contains(fname);
-}
-
-void QLProject::callGHDLaOnFile(QString fname)
-{
-    if(mFileList.contains(fname)) {
-        QProcess p = new QProcess(this);
-
-        QString cmd = "ghdl -a " + fname;
-
-        p.setProcessChannelMode(QProcess::MergedChannels);
-
-        p.start(cmd);
-    }
-    else {
-        qWarning("%s is not in HDL file list.\n", qUtf8Printable(fname));
-    }
-}
-
-void QLProject::callGHDLaOnAllFiles()
-{
-    for(int i=0; i<mFileList.size(); ++i) {
-        QProcess p = new QProcess(this);
-
-        QString cmd = "ghdl -a " + fname;
-
-        p.setProcessChannelMode(QProcess::MergedChannels);
-
-        p.start(cmd);
-    }
-}
-
-void QLProject::callGHDLeOnTestBench()
-{
-    if(mBench.isEmpty()) {
-        qWarning("No testbench file. Please create a testbench.");
-    }
-    else {
-        callGHDLaOnAllFiles();
-
-        QProcess p = new QProcess(this);
-
-        QString cmd = "ghdl -e " + mBench;
-
-        p.setProcessChannelMode(QProcess::MergedChannels);
-
-        p.start(cmd);
-
-    }
-}
-
-void QLProject::callGHDLrOnTestBench()
-{
-    if(mBench.isEmpty()) {
-        qWarning("No testbench file. Please create a testbench.");
-    }
-    else {
-
-        QProcess p = new QProcess(this);
-
-        QString cmd = "ghdl -r " + mBench + "--vcd=" + mBench + ".vcd";
-
-        p.setProcessChannelMode(QProcess::MergedChannels);
-
-        p.start(cmd);
-
-    }
-
-}
-
-void QLProject::callGtkWave()
-{
-    if(mBench.isEmpty()) {
-        qWarning("No testbench file. Please create a testbench.");
-    }
-    else {
-
-        QProcess p = new QProcess(this);
-
-        QString cmd = "gtkwave " + mBench + ".vcd";
-
-        p.setProcessChannelMode(QProcess::MergedChannels);
-
-        p.start(cmd);
-
-    }
-
 }
 

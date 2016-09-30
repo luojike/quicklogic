@@ -2,7 +2,10 @@
 #include "ui_qlmainwindow.h"
 
 #include "qlmisc.h"
+#include "qlproject.h"
+#include "qlprocess.h"
 
+#include <QTextEdit>
 #include <QTreeView>
 #include <QFileSystemModel>
 #include <QDir>
@@ -39,7 +42,12 @@ QLMainWindow::QLMainWindow(QWidget *parent) :
 
     setWindowTitle(QApplication::applicationName());
 
-    proejct = new QLProject();
+    project = new QLProject();
+
+    //subproc = new QProcess(this);
+
+    //subproc->setProcessChannelMode(QProcess::MergedChannels);
+
 }
 
 QLMainWindow::~QLMainWindow()
@@ -67,7 +75,7 @@ QLMainWindow::~QLMainWindow()
 void QLMainWindow::createWidgets()
 {
     dirModel = new QFileSystemModel(this);
-    dirModel->setRootPath(QDir::homePath());
+    dirModel->setRootPath(QDir::currentPath());
     dirModel->setFilter(QDir::NoDotAndDotDot | QDir::AllDirs);
     dirModel->setReadOnly(true);
 
@@ -87,7 +95,8 @@ void QLMainWindow::createWidgets()
     dirView->header()->setSortIndicatorShown(true);
     dirView->header()->setSectionsClickable(true);
 
-    QModelIndex index = dirModel->index(QDir::homePath());
+    QModelIndex index = dirModel->index(QDir::currentPath());
+
     dirView->expand(index);
     dirView->scrollTo(index);
     dirView->resizeColumnToContents(0);
@@ -107,6 +116,8 @@ void QLMainWindow::createWidgets()
     fileView->setAnimated(false);
     fileView->setSortingEnabled(true);
     fileView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+    logger = new QTextEdit(splitter);
 }
 
 void QLMainWindow::createLayout()
@@ -261,43 +272,123 @@ void QLMainWindow::showFiles(QModelIndex index)
 void QLMainWindow::analyzeFile()
 {
     QString fileName = fileModel->filePath(fileView->currentIndex());
+
     if (!fileName.isEmpty()) {
 
-        if (!project && !project->getName().isEmpty()) {
+        callGHDLaOnFile(fileName);
 
-            project->callGHDLaOnFile(fileName);
-
-        }
     }
 }
 
 void QLMainWindow::buildTestBench()
 {
-    if (!project && !project->getName().isEmpty() &&
-            !project->getTestBenchName().isEmpty()) {
-
-        project->callGHDLeOnTestBench();
-
-    }
+    callGHDLeOnTestBench();
 }
 
 void QLMainWindow::runTestBench()
 {
-    if (!project && !project->getName().isEmpty() &&
-            !project->getTestBenchName().isEmpty()) {
-
-        project->callGHDLrOnTestBench();
-
-    }
+    callGHDLrOnTestBench();
 }
 
 void QLMainWindow::viewWave()
 {
-    if (!project && !project->getName().isEmpty() &&
-            !project->getTestBenchName().isEmpty()) {
+    callGtkWave();
+}
 
-        project->callGtkWave();
+void QLMainWindow::callGHDLaOnFile(QString fname)
+{
+    QStringList filelist = project->getFiles();
+
+    if(!filelist.contains(fname)) {
+        qWarning("%s is not in current project HDL file list.\n", qUtf8Printable(fname));
+    }
+
+    QLProcess *p = new QLProcess(logger);
+
+    QString cmd = "ghdl -a " + fname;
+
+    p->setProcessChannelMode(QProcess::MergedChannels);
+
+    p->start(cmd);
+}
+
+void QLMainWindow::callGHDLaOnAllFiles()
+{
+    QStringList filelist = project->getFiles();
+
+    QLProcess *p = new QLProcess(logger);
+
+    p->setProcessChannelMode(QProcess::MergedChannels);
+
+    for(int i=0; i<filelist.size(); ++i) {
+        QString cmd = "ghdl -a " + filelist.at(i);
+
+        p->start(cmd);
+    }
+}
+
+void QLMainWindow::callGHDLeOnTestBench()
+{
+    QString bench = project->getTestBenchName();
+
+    if(bench.isEmpty()) {
+        qWarning("No testbench file. Please create a testbench.");
+    }
+    else {
+        callGHDLaOnAllFiles();
+
+        QLProcess *p = new QLProcess(logger);
+
+        QString cmd = "ghdl -e " + bench;
+
+        p->setProcessChannelMode(QProcess::MergedChannels);
+
+        p->start(cmd);
 
     }
 }
+
+void QLMainWindow::callGHDLrOnTestBench()
+{
+    QString bench = project->getTestBenchName();
+
+    if(bench.isEmpty()) {
+        qWarning("No testbench file. Please create or select a testbench.");
+    }
+    else {
+
+        QLProcess *p = new QLProcess(logger);
+
+        QString cmd = "ghdl -r " + bench + "--vcd=" + bench + ".vcd";
+
+        p->setProcessChannelMode(QProcess::MergedChannels);
+
+        p->start(cmd);
+
+    }
+
+}
+
+void QLMainWindow::callGtkWave()
+{
+    QString bench = project->getTestBenchName();
+
+    if(bench.isEmpty()) {
+        qWarning("No testbench file. Please create or select a testbench.");
+    }
+    else {
+
+        QLProcess *p = new QLProcess(logger);
+
+        QString cmd = "gtkwave " + bench + ".vcd";
+
+        p->setProcessChannelMode(QProcess::MergedChannels);
+
+        p->start(cmd);
+
+    }
+
+}
+
+
 

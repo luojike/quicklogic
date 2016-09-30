@@ -21,6 +21,7 @@ SOURCES += main.cpp\
 
 HEADERS  += qlmainwindow.h \
     qlmisc.h \
-    qlproject.h
+    qlproject.h \
+    qlprocess.h
 
 FORMS    += qlmainwindow.ui

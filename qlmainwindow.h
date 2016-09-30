@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QModelIndex>
+#include <QTextEdit>
+#include <QProcess>
 
 #include "qlproject.h"
 
@@ -49,11 +51,21 @@ private:
     void createConnections();
     void createActions();
 
-    QTreeView *dirView;
-    QTreeView *fileView;
+    void callGHDLaOnFile(QString fname);
+    void callGHDLaOnAllFiles();
+    void callGHDLeOnTestBench();
+    void callGHDLrOnTestBench();
+    void callGtkWave();
+
+    void readSubprocessStdOut();
+
     QFileSystemModel *dirModel;
     QFileSystemModel *fileModel;
+
+    QTreeView *dirView;
+    QTreeView *fileView;
     QSplitter *splitter;
+    QTextEdit *logger;
 
     QAction *newFileAction;
     QAction *delFileAction;
@@ -65,6 +77,8 @@ private:
     QAction *viewWaveAction;
 
     QLProject *project;
+
+    //QProcess *subproc;
 };
 
 #endif // QLMAINWINDOW_H
