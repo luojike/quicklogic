@@ -2,38 +2,60 @@
 #define QLPROCESS_H
 
 #include <QProcess>
-#include <QPlainTextEdit>
+#include <QTextEdit>
+//#include <QTextStream>
+//#include <QIODevice>
+//#include <iostream>
+
 
 
 class QLProcess: public QProcess
 {
-  Q_OBJECT
-  public:
-  QLProcess(QTextEdit *pedit): QProcess()
-  {
-    logger = pedit;
-    //logger->resize(500,500);
-    //logger->setWindowTitle("Standard Output Redirection");
-    //logger->show();
-    connect(this,SIGNAL(readyReadStandardOutput()),this,SLOT(readStdOutput()));
-    connect(this,SIGNAL(error(QProcess::ProcessError)),this,SLOT(readError()));
-  };
+Q_OBJECT
+public:
+	QLProcess(QObject *parent = Q_NULLPTR): QProcess(parent)
+	{
+        outTextEdit = Q_NULLPTR;
 
-  ~QLProcess()  {};
+        connect(this,SIGNAL(readyReadStandardOutput()),this,SLOT(readStdOutput()));
+		connect(this,SIGNAL(error(QProcess::ProcessError)),this,SLOT(readError()));
+    }
+
+    ~QLProcess()  {}
+
+    QTextEdit* getOutTextEdit() { return outTextEdit; }
+
+    void setOutTextEdit(QTextEdit *pedit) { outTextEdit = pedit; }
+
 
 private slots:
-  void readStdOutput()
-  {
-    logger->append(readAllStandardOutput());
-  }
+	void readStdOutput()
+	{
+        if(outTextEdit != Q_NULLPTR) {
+            outTextEdit->append( readAllStandardOutput() );
+        }
+        //else {
+        //	cout << readAllStandardOutput() << endl;
+        //}
+	}
 
-  void readError()
-  {
-    logger->append("An Error Occured! Error Code is: "+QString::number(error()));
-  }
+	void readError()
+	{
+		if(outTextEdit != Q_NULLPTR) {
+			outTextEdit->append("An Error Occured! Error Code is: "+QString::number(error()));
+		}
+        //else {
+        //	cerr << readAllStandardError() << endl;
+        //}
+	}
 
 private:
-  QTextEdit* logger;
+	QTextEdit* outTextEdit;
+
+    //QTextStream cout(stdout, QIODevice::WriteOnly);
+    //QTextStream cerr(stderr, QIODevice::WriteOnly);
+    //QTextStream cin(stdin, QIODevice::ReadOnly);
+
 };
 
 #endif // QLPROCESS_H

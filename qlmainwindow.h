@@ -36,7 +36,8 @@ private slots:
     void delFile();
     void renFile();
     void openFile();
-    void showFiles(QModelIndex);
+    void onDirviewClick(QModelIndex);
+    void onFileviewDoubleClick(QModelIndex);
 
     void analyzeFile();
     void buildTestBench();
@@ -66,6 +67,7 @@ private:
     QTreeView *fileView;
     QSplitter *splitter;
     QTextEdit *logger;
+    QDockWidget *dock;
 
     QAction *newFileAction;
     QAction *delFileAction;

@@ -5,6 +5,7 @@
 #include "qlproject.h"
 #include "qlprocess.h"
 
+#include <QDockWidget>
 #include <QTextEdit>
 #include <QTreeView>
 #include <QFileSystemModel>
@@ -108,21 +109,34 @@ void QLMainWindow::createWidgets()
     fileView->setModel(fileModel);
     fileView->setRootIndex(
         fileModel->setRootPath(dirModel->fileInfo(index).absoluteFilePath()));
+
     fileView->header()->setStretchLastSection(true);
     fileView->header()->setSortIndicator(0, Qt::AscendingOrder);
     fileView->header()->setSortIndicatorShown(true);
     fileView->header()->setSectionsClickable(true);
+
     fileView->resizeColumnToContents(0);
     fileView->setAnimated(false);
     fileView->setSortingEnabled(true);
     fileView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    fileView->setItemsExpandable(false);
 
-    logger = new QTextEdit(splitter);
+    dock = new QDockWidget(tr("Log Window"), this);
+    dock->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+
+
+    logger = new QTextEdit(dock);
+
+    dock->setWidget(logger);
+
 }
 
 void QLMainWindow::createLayout()
 {
     setCentralWidget(splitter);
+
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
+
     resize(800, 600);
 }
 
@@ -169,16 +183,23 @@ void QLMainWindow::contextMenuEvent(QContextMenuEvent *event)
 
 void QLMainWindow::createConnections()
 {
+    connect(dirView, SIGNAL(clicked(QModelIndex)), this,
+            SLOT(onDirviewClick(QModelIndex)));
+
+    connect(fileView, SIGNAL(doubleClicked(QModelIndex)), this,
+            SLOT(onFileviewDoubleClick(QModelIndex)));
+
+
     connect(renFileAction, SIGNAL(triggered()), this, SLOT(renFile()));
     connect(delFileAction, SIGNAL(triggered()), this, SLOT(delFile()));
+
     //connect(fileModel, SIGNAL(fileRenamed(QString, QString, QString)), this,
     //        SLOT(fileRenameDone()));
     //auto stopEditingSlot = [&]() { fileModel->setReadOnly(true); };
     //connect(fileView, &QTreeView::doubleClicked, stopEditingSlot);
+
     connect(openFileAction, SIGNAL(triggered()), this, SLOT(openFile()));
     connect(newFileAction, SIGNAL(triggered()), this, SLOT(newFile()));
-    connect(dirView, SIGNAL(clicked(QModelIndex)), this,
-            SLOT(showFiles(QModelIndex)));
 
     connect(analyzeFileAction, SIGNAL(triggered()), this, SLOT(analyzeFile()));
     connect(buildTestBenchAction, SIGNAL(triggered()), this, SLOT(buildTestBench()));
@@ -186,6 +207,62 @@ void QLMainWindow::createConnections()
     connect(viewWaveAction, SIGNAL(triggered()), this, SLOT(viewWave()));
 
 }
+
+
+void QLMainWindow::onDirviewClick(QModelIndex index)
+{
+    QString dir = dirModel->fileInfo(index).absoluteFilePath();
+
+    fileView->setRootIndex( fileModel->setRootPath(dir) );
+
+    QDir::setCurrent(dir);
+}
+
+void QLMainWindow::onFileviewDoubleClick(QModelIndex index)
+{
+    if( fileModel->isDir(index) ) {
+        fileView->setRootIndex( index );
+
+        QString dir = fileModel->fileInfo(index).absolutePath();
+
+        QDir::setCurrent(dir);
+
+        QModelIndex idx = dirModel->index(dir);
+
+        dirView->expand(idx);
+        dirView->scrollTo(idx);
+    }
+    else {
+        QString fileName = fileModel->filePath(index);
+        try
+        {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+        }
+        catch (const std::exception &e)
+        {
+            logger->append("Unable to open file " + fileName + "\n" +
+                     qUtf8Printable(e.what()));
+        }
+
+    }
+
+}
+
+void QLMainWindow::openDir(QModelIndex index)
+{
+    fileView->setRootIndex( index );
+
+    QString dir = fileModel->fileInfo(index).absolutePath();
+
+    QDir::setCurrent(dir);
+
+    QModelIndex idx = dirModel->index(dir);
+
+    dirView->expand(idx);
+    dirView->scrollTo(idx);
+
+}
+
 
 void QLMainWindow::renFile()
 {
@@ -262,13 +339,6 @@ void QLMainWindow::newFile()
     }
 }
 
-void QLMainWindow::showFiles(QModelIndex index)
-{
-    fileView->setRootIndex(
-        fileModel->setRootPath(dirModel->fileInfo(index).absoluteFilePath()));
-}
-
-
 void QLMainWindow::analyzeFile()
 {
     QString fileName = fileModel->filePath(fileView->currentIndex());
@@ -300,10 +370,12 @@ void QLMainWindow::callGHDLaOnFile(QString fname)
     QStringList filelist = project->getFiles();
 
     if(!filelist.contains(fname)) {
-        qWarning("%s is not in current project HDL file list.\n", qUtf8Printable(fname));
+        logger->append( qUtf8Printable(fname + " is not in current project HDL file list.\n") );
     }
 
-    QLProcess *p = new QLProcess(logger);
+    QLProcess *p = new QLProcess(this);
+
+    p->setOutTextEdit(logger);
 
     QString cmd = "ghdl -a " + fname;
 
@@ -316,7 +388,9 @@ void QLMainWindow::callGHDLaOnAllFiles()
 {
     QStringList filelist = project->getFiles();
 
-    QLProcess *p = new QLProcess(logger);
+    QLProcess *p = new QLProcess(this);
+
+    p->setOutTextEdit(logger);
 
     p->setProcessChannelMode(QProcess::MergedChannels);
 
@@ -332,20 +406,31 @@ void QLMainWindow::callGHDLeOnTestBench()
     QString bench = project->getTestBenchName();
 
     if(bench.isEmpty()) {
-        qWarning("No testbench file. Please create a testbench.");
+        logger->append("No testbench file. Please create a testbench.");
+
+        QString fname = stripPath( fileModel->filePath(fileView->currentIndex()) );
+
+        logger->append("File to use as TestBench: " + fname);
+
+        bench = stripSurfix(fname);
+
+        logger->append("TestBench name: " + bench);
     }
-    else {
-        callGHDLaOnAllFiles();
 
-        QLProcess *p = new QLProcess(logger);
+    callGHDLaOnAllFiles();
 
-        QString cmd = "ghdl -e " + bench;
+    QLProcess *p = new QLProcess(this);
 
-        p->setProcessChannelMode(QProcess::MergedChannels);
+    p->setOutTextEdit(logger);
 
-        p->start(cmd);
+    QString cmd = "ghdl -e " + bench;
 
-    }
+    logger->append(cmd);
+
+    p->setProcessChannelMode(QProcess::MergedChannels);
+
+    p->start(cmd);
+
 }
 
 void QLMainWindow::callGHDLrOnTestBench()
@@ -353,19 +438,28 @@ void QLMainWindow::callGHDLrOnTestBench()
     QString bench = project->getTestBenchName();
 
     if(bench.isEmpty()) {
-        qWarning("No testbench file. Please create or select a testbench.");
+        logger->append("No testbench file. Please create or select a testbench.");
+
+        QString fname = stripPath( fileModel->filePath(fileView->currentIndex()) );
+
+        logger->append("File to use as TestBench: " + fname);
+
+        bench = stripSurfix(fname);
+
+        logger->append("TestBench name: " + bench);
     }
-    else {
 
-        QLProcess *p = new QLProcess(logger);
+    QLProcess *p = new QLProcess(this);
 
-        QString cmd = "ghdl -r " + bench + "--vcd=" + bench + ".vcd";
+    p->setOutTextEdit(logger);
 
-        p->setProcessChannelMode(QProcess::MergedChannels);
+    QString cmd = "ghdl -r " + bench + " --vcd=" + bench + ".vcd";
 
-        p->start(cmd);
+    logger->append(cmd);
 
-    }
+    p->setProcessChannelMode(QProcess::MergedChannels);
+
+    p->start(cmd);
 
 }
 
@@ -374,19 +468,29 @@ void QLMainWindow::callGtkWave()
     QString bench = project->getTestBenchName();
 
     if(bench.isEmpty()) {
-        qWarning("No testbench file. Please create or select a testbench.");
+        logger->append("No testbench file. Please create or select a testbench.");
+
+        QString fname = stripPath( fileModel->filePath(fileView->currentIndex()) );
+
+        logger->append("File to use as TestBench: " + fname);
+
+        bench = stripSurfix(fname);
+
+        logger->append("TestBench name: " + bench);
     }
-    else {
 
-        QLProcess *p = new QLProcess(logger);
 
-        QString cmd = "gtkwave " + bench + ".vcd";
+    QLProcess *p = new QLProcess(this);
 
-        p->setProcessChannelMode(QProcess::MergedChannels);
+    p->setOutTextEdit(logger);
 
-        p->start(cmd);
+    QString cmd = "gtkwave " + bench + ".vcd";
 
-    }
+    logger->append(cmd);
+
+    p->setProcessChannelMode(QProcess::MergedChannels);
+
+    p->start(cmd);
 
 }
 

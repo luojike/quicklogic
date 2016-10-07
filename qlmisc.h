@@ -3,6 +3,7 @@
 
 #include <QString>
 
+QString stripPath(QString pathname);
 
 QString stripSurfix(QString filename);
 
