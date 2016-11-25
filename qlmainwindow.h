@@ -9,8 +9,8 @@
 #include "qlproject.h"
 
 
-namespace Ui {
-class QLMainWindow;
+namespace ql {
+    class QLMainWindow;
 }
 
 class QTreeView;
@@ -25,7 +25,7 @@ class QLMainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit QLMainWindow(QWidget *parent = 0);
+    explicit QLMainWindow(QWidget *parent = Q_NULLPTR);
     ~QLMainWindow();
 
 protected:
@@ -36,21 +36,31 @@ private slots:
     void delFile();
     void renFile();
     void openFile();
-    void onDirviewClick(QModelIndex);
-    void onFileviewDoubleClick(QModelIndex);
+
+    void fileRenameDone();
+
+    void clickDirView(QModelIndex);
+    void doubleClickFileView(QModelIndex);
 
     void analyzeFile();
     void buildTestBench();
     void runTestBench();
     void viewWave();
 
-private:
-    Ui::QLMainWindow *ui;
+    void setGHDLOptions();
 
+    void aboutQuickLogic();
+
+private:
+    //ql::QLMainWindow *mainWindow;
+
+    void createActions();
     void createWidgets();
     void createLayout();
     void createConnections();
-    void createActions();
+    void createMenus();
+
+    void openDir(QModelIndex);
 
     void callGHDLaOnFile(QString fname);
     void callGHDLaOnAllFiles();
@@ -65,18 +75,32 @@ private:
 
     QTreeView *dirView;
     QTreeView *fileView;
+
     QSplitter *splitter;
-    QTextEdit *logger;
+    QTextEdit *outedit;
     QDockWidget *dock;
 
-    QAction *newFileAction;
-    QAction *delFileAction;
-    QAction *renFileAction;
-    QAction *openFileAction;
-    QAction *analyzeFileAction;
-    QAction *buildTestBenchAction;
-    QAction *runTestBenchAction;
-    QAction *viewWaveAction;
+    QMenu *fileMenu;
+    QMenu *editMenu;
+    QMenu *ghdlMenu;
+    QMenu *helpMenu;
+
+    QAction *newFileAct;
+    QAction *delFileAct;
+    QAction *renFileAct;
+    QAction *openFileAct;
+
+    QAction *settingsAct;
+    QAction *exitAct;
+
+    QAction *aboutAct;
+
+    QAction *ghdlAnalyzeAct;
+    QAction *ghdlBuildExecAct;
+    QAction *ghdlRunExecAct;
+    QAction *ghdlOptionsAct;
+
+    QAction *gtkwaveAct;
 
     QLProject *project;
 

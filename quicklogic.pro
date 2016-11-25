@@ -17,11 +17,15 @@ TEMPLATE = app
 SOURCES += main.cpp\
         qlmainwindow.cpp \
     qlmisc.cpp \
-    qlproject.cpp
+    qlproject.cpp \
+    qlghdloptions.cpp \
+    qlghdloptionsdialog.cpp
 
 HEADERS  += qlmainwindow.h \
     qlmisc.h \
     qlproject.h \
-    qlprocess.h
+    qlprocess.h \
+    qlghdloptions.h \
+    qlghdloptionsdialog.h
 
-FORMS    += qlmainwindow.ui
+FORMS    +=
