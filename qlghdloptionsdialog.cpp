@@ -19,7 +19,7 @@ QLGHDLOptionsDialog::QLGHDLOptionsDialog(QWidget *parent) :
 
     ieeeliblabel = new QLabel(tr("IEEE Library:"));
     QStringList libs;
-    libs << "none" << "standard" << "synopsys" << "mentor";
+    libs << "" << "none" << "standard" << "synopsys" << "mentor";
     ieeelibcombo = new QComboBox; // must be "none", "standard", "synopsys" or "mentor"
     ieeelibcombo->addItems(libs);
     ieeelibcombo->setEditable(false);
@@ -51,28 +51,28 @@ QLGHDLOptionsDialog::QLGHDLOptionsDialog(QWidget *parent) :
     grid->addWidget(optionstrlabel, 0, 0);
     grid->addWidget(optionstredit, 0, 1, 1, 3);
 
-    grid->addWidget(fexplicit, 1, 0);
-    grid->addWidget(frelaxed_rules, 1, 1);
-    grid->addWidget(fpsl, 1, 2);
-    grid->addWidget(syn_binding, 1, 3);
-
-    grid->addWidget(no_vital_checks, 2, 0);
-    grid->addWidget(vital_checks, 2, 1);
-
     grid->addWidget(workdirlabel, 1, 0);
-    grid->addWidget(workdiredit, 1, 1);
+    grid->addWidget(workdiredit, 1, 1, 1, 3);
 
-    grid->addWidget(prefixdirlabel, 1, 2);
-    grid->addWidget(prefixdiredit, 1, 3);
-
-    grid->addWidget(vhdlstdlabel, 2, 0);
-    grid->addWidget(vhdlstdcombo, 2, 1);
-
-    grid->addWidget(ieeeliblabel, 2, 2);
-    grid->addWidget(ieeelibcombo, 2, 3);
+    grid->addWidget(prefixdirlabel, 2, 0);
+    grid->addWidget(prefixdiredit, 2, 1, 1, 3);
 
     grid->addWidget(ghdl1cmdlabel, 3, 0);
     grid->addWidget(ghdl1cmdedit, 3, 1, 1, 3);
+
+    grid->addWidget(vhdlstdlabel, 4, 0);
+    grid->addWidget(vhdlstdcombo, 4, 1);
+
+    grid->addWidget(ieeeliblabel, 4, 2);
+    grid->addWidget(ieeelibcombo, 4, 3);
+
+    grid->addWidget(fexplicit, 5, 0);
+    grid->addWidget(frelaxed_rules, 5, 1);
+    grid->addWidget(fpsl, 5, 2);
+    grid->addWidget(syn_binding, 5, 3);
+
+    grid->addWidget(no_vital_checks, 6, 0);
+    grid->addWidget(vital_checks, 6, 1);
 
     setLayout(grid);
 

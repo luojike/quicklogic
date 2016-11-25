@@ -1,2 +1,2 @@
 # quicklogic
-A software for a quick look of the logic circuit designs.
+A program using GHDL and GtkWave for a quick simulation of the logic circuit designs.
