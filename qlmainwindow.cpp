@@ -53,6 +53,8 @@ QLMainWindow::QLMainWindow(QWidget *parent) :
     QString message = tr("Choose an action to start");
     statusBar()->showMessage(message);
 
+    optionsDialog = new QLGHDLOptionsDialog(this);
+
     project = new QLProject();
 
     //subproc = new QProcess(this);
@@ -435,9 +437,8 @@ void QLMainWindow::viewWave()
 
 void QLMainWindow::setGHDLOptions()
 {
-    QLGHDLOptionsDialog optionsDialog(this);
 
-    optionsDialog.exec();
+    optionsDialog->exec();
 }
 
 void QLMainWindow::callGHDLaOnFile(QString fname)

@@ -7,6 +7,7 @@
 #include <QProcess>
 
 #include "qlproject.h"
+#include "qlghdloptionsdialog.h"
 
 
 namespace ql {
@@ -101,6 +102,8 @@ private:
     QAction *ghdlOptionsAct;
 
     QAction *gtkwaveAct;
+
+    QLGHDLOptionsDialog *optionsDialog;
 
     QLProject *project;
 

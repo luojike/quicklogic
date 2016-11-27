@@ -25,6 +25,9 @@ QLGHDLOptionsDialog::QLGHDLOptionsDialog(QWidget *parent) :
     ieeelibcombo->setEditable(false);
 
     //QStringList libdirs;
+    libdirslabel = new QLabel(tr("Library Directories:"));
+    libdirsedit = new QLineEdit;
+    libdirslabel->setBuddy(libdirsedit);
 
     fexplicit = new QCheckBox(tr("-fexplicit"));
     frelaxed_rules = new QCheckBox(tr("-frelaxed-rules"));
@@ -47,6 +50,12 @@ QLGHDLOptionsDialog::QLGHDLOptionsDialog(QWidget *parent) :
     optionstredit = new QLineEdit;
     optionstrlabel->setBuddy(optionstredit);
 
+    okButton = new QPushButton(tr("OK"));
+    okButton->setDefault(true);
+
+    cancelButton = new QPushButton(tr("Cancel"));
+    cancelButton->setDefault(false);
+
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(optionstrlabel, 0, 0);
     grid->addWidget(optionstredit, 0, 1, 1, 3);
@@ -57,24 +66,33 @@ QLGHDLOptionsDialog::QLGHDLOptionsDialog(QWidget *parent) :
     grid->addWidget(prefixdirlabel, 2, 0);
     grid->addWidget(prefixdiredit, 2, 1, 1, 3);
 
-    grid->addWidget(ghdl1cmdlabel, 3, 0);
-    grid->addWidget(ghdl1cmdedit, 3, 1, 1, 3);
+    grid->addWidget(libdirslabel, 3, 0);
+    grid->addWidget(libdirsedit, 3, 1, 1, 3);
 
-    grid->addWidget(vhdlstdlabel, 4, 0);
-    grid->addWidget(vhdlstdcombo, 4, 1);
+    grid->addWidget(ghdl1cmdlabel, 4, 0);
+    grid->addWidget(ghdl1cmdedit, 4, 1, 1, 3);
 
-    grid->addWidget(ieeeliblabel, 4, 2);
-    grid->addWidget(ieeelibcombo, 4, 3);
+    grid->addWidget(vhdlstdlabel, 5, 0);
+    grid->addWidget(vhdlstdcombo, 5, 1);
 
-    grid->addWidget(fexplicit, 5, 0);
-    grid->addWidget(frelaxed_rules, 5, 1);
-    grid->addWidget(fpsl, 5, 2);
-    grid->addWidget(syn_binding, 5, 3);
+    grid->addWidget(ieeeliblabel, 5, 2);
+    grid->addWidget(ieeelibcombo, 5, 3);
 
-    grid->addWidget(no_vital_checks, 6, 0);
-    grid->addWidget(vital_checks, 6, 1);
+    grid->addWidget(fexplicit, 6, 0);
+    grid->addWidget(frelaxed_rules, 6, 1);
+    grid->addWidget(fpsl, 6, 2);
+    grid->addWidget(syn_binding, 6, 3);
+
+    grid->addWidget(no_vital_checks, 7, 0);
+    grid->addWidget(vital_checks, 7, 1);
+
+    grid->addWidget(okButton, 8, 2);
+    grid->addWidget(cancelButton, 8, 3);
 
     setLayout(grid);
+
+    connect(okButton, &QAbstractButton::clicked, this, &QDialog::accept);
+    connect(cancelButton, &QAbstractButton::clicked, this, &QDialog::reject);
 
     setWindowTitle(tr("Options"));
 

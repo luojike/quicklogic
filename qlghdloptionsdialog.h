@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QPushButton>
 
 
 class QLGHDLOptionsDialog : public QDialog
@@ -27,6 +28,8 @@ private:
     QComboBox* ieeelibcombo; // must be "none", "standard", "synopsys" or "mentor"
 
     //QStringList libdirs;
+    QLabel *libdirslabel;
+    QLineEdit *libdirsedit;
 
     QCheckBox* fexplicit;
     QCheckBox* frelaxed_rules;
@@ -45,6 +48,9 @@ private:
 
     QLabel* optionstrlabel;
     QLineEdit* optionstredit;
+
+    QPushButton *okButton;
+    QPushButton *cancelButton;
 
 };
 
