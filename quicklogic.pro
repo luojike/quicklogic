@@ -19,13 +19,15 @@ SOURCES += main.cpp\
     qlmisc.cpp \
     qlproject.cpp \
     qlghdloptions.cpp \
-    qlghdloptionsdialog.cpp
+    qlghdloptionsdialog.cpp \
+    qlghdlsimoptionsdialog.cpp
 
 HEADERS  += qlmainwindow.h \
     qlmisc.h \
     qlproject.h \
     qlprocess.h \
     qlghdloptions.h \
-    qlghdloptionsdialog.h
+    qlghdloptionsdialog.h \
+    qlghdlsimoptionsdialog.h
 
 FORMS    +=

@@ -98,3 +98,39 @@ QLGHDLOptionsDialog::QLGHDLOptionsDialog(QWidget *parent) :
 
 }
 
+QLGHDLOptionsDialog::~QLGHDLOptionsDialog()
+{
+    delete workdirlabel;
+    delete workdiredit;
+
+    delete vhdlstdlabel; // must be "87", "93", "93c", "00", "02", "08"
+    delete vhdlstdcombo;
+
+    delete ieeeliblabel;
+    delete ieeelibcombo; // must be "none", "standard", "synopsys" or "mentor"
+
+    //QStringList libdirs;
+    delete libdirslabel;
+    delete libdirsedit;
+
+    delete fexplicit;
+    delete frelaxed_rules;
+    delete fpsl;
+    delete no_vital_checks;
+    delete vital_checks;
+    delete syn_binding;
+
+    delete prefixdirlabel;
+    delete prefixdiredit;
+
+    delete ghdl1cmdlabel;
+    delete ghdl1cmdedit;
+
+    delete verbose;
+
+    delete optionstrlabel;
+    delete optionstredit;
+
+    delete okButton;
+    delete cancelButton;
+}

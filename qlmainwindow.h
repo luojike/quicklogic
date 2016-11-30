@@ -8,6 +8,7 @@
 
 #include "qlproject.h"
 #include "qlghdloptionsdialog.h"
+#include "qlghdlsimoptionsdialog.h"
 
 
 namespace ql {
@@ -49,6 +50,7 @@ private slots:
     void viewWave();
 
     void setGHDLOptions();
+    void setGHDLSimOptions();
 
     void aboutQuickLogic();
 
@@ -100,10 +102,14 @@ private:
     QAction *ghdlBuildExecAct;
     QAction *ghdlRunExecAct;
     QAction *ghdlOptionsAct;
+    QAction *ghdlSimOptionsAct;
 
     QAction *gtkwaveAct;
 
     QLGHDLOptionsDialog *optionsDialog;
+    QLGHDLSimOptionsDialog *simoptionsDialog;
+    QString optionStr;
+    QString simoptionStr;
 
     QLProject *project;
 

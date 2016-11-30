@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QString>
 
 
 class QLGHDLOptionsDialog : public QDialog
@@ -16,6 +17,9 @@ class QLGHDLOptionsDialog : public QDialog
 
 public:
     QLGHDLOptionsDialog(QWidget *parent = 0);
+    ~QLGHDLOptionsDialog();
+
+    QString getOptionstring() { return optionstredit->text(); }
 
 private:
     QLabel* workdirlabel;

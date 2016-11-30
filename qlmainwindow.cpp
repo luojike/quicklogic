@@ -5,6 +5,7 @@
 #include "qlproject.h"
 #include "qlprocess.h"
 #include "qlghdloptionsdialog.h"
+#include "qlghdlsimoptionsdialog.h"
 
 #include <QApplication>
 #include <QStatusBar>
@@ -54,6 +55,10 @@ QLMainWindow::QLMainWindow(QWidget *parent) :
     statusBar()->showMessage(message);
 
     optionsDialog = new QLGHDLOptionsDialog(this);
+    optionStr = "";
+
+    simoptionsDialog = new QLGHDLSimOptionsDialog(this);
+    simoptionStr = "";
 
     project = new QLProject();
 
@@ -65,7 +70,6 @@ QLMainWindow::QLMainWindow(QWidget *parent) :
 
 QLMainWindow::~QLMainWindow()
 {
-    delete project;
 
     delete dirView;
     delete fileView;
@@ -87,6 +91,10 @@ QLMainWindow::~QLMainWindow()
     delete ghdlRunExecAct;
     delete gtkwaveAct;
 
+    delete optionsDialog;
+    delete simoptionsDialog;
+
+    delete project;
     //delete mainWindow;
 
 }
@@ -182,7 +190,7 @@ void QLMainWindow::createActions()
     exitAct->setStatusTip(tr("Exit QuickLogic"));
 
     settingsAct = new QAction(tr("&Settings"), this);
-    settingsAct->setStatusTip(tr("Set options"));
+    settingsAct->setStatusTip(tr("Config QuickLogic"));
 
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("About QuickLogic"));
@@ -204,6 +212,9 @@ void QLMainWindow::createActions()
 
     ghdlOptionsAct = new QAction(tr("O&ptions"), this);
     ghdlOptionsAct->setStatusTip(tr("Set GHDL Options"));
+
+    ghdlSimOptionsAct = new QAction(tr("Si&m Options"), this);
+    ghdlSimOptionsAct->setStatusTip(tr("Set GHDL Sim Options"));
 
 
 }
@@ -229,6 +240,7 @@ void QLMainWindow::createMenus()
     ghdlMenu->addAction(gtkwaveAct);
     ghdlMenu->addSeparator();
     ghdlMenu->addAction(ghdlOptionsAct);
+    ghdlMenu->addAction(ghdlSimOptionsAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
@@ -281,6 +293,7 @@ void QLMainWindow::createConnections()
     connect(ghdlRunExecAct, SIGNAL(triggered()), this, SLOT(runTestBench()));
     connect(gtkwaveAct, SIGNAL(triggered()), this, SLOT(viewWave()));
     connect(ghdlOptionsAct, SIGNAL(triggered()), this, SLOT(setGHDLOptions()));
+    connect(ghdlSimOptionsAct, SIGNAL(triggered()), this, SLOT(setGHDLSimOptions()));
 
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(aboutQuickLogic()));
 
@@ -438,7 +451,17 @@ void QLMainWindow::viewWave()
 void QLMainWindow::setGHDLOptions()
 {
 
-    optionsDialog->exec();
+    if( optionsDialog->exec() == QDialog::Accepted ) {
+        optionStr = optionsDialog->getOptionstring();
+    }
+}
+
+void QLMainWindow::setGHDLSimOptions()
+{
+
+    if( simoptionsDialog->exec() == QDialog::Accepted ) {
+        simoptionStr = simoptionsDialog->getSimOptionstring();
+    }
 }
 
 void QLMainWindow::callGHDLaOnFile(QString fname)
@@ -453,7 +476,7 @@ void QLMainWindow::callGHDLaOnFile(QString fname)
 
     p->setOutTextEdit(outedit);
 
-    QString cmd = "ghdl -a " + fname;
+    QString cmd = "ghdl -a " + optionStr + " " + fname;
 
     p->setProcessChannelMode(QProcess::MergedChannels);
 
@@ -471,7 +494,7 @@ void QLMainWindow::callGHDLaOnAllFiles()
     p->setProcessChannelMode(QProcess::MergedChannels);
 
     for(int i=0; i<filelist.size(); ++i) {
-        QString cmd = "ghdl -a " + filelist.at(i);
+        QString cmd = "ghdl -a " + optionStr + " " + filelist.at(i);
 
         p->start(cmd);
     }
@@ -499,7 +522,7 @@ void QLMainWindow::callGHDLeOnTestBench()
 
     p->setOutTextEdit(outedit);
 
-    QString cmd = "ghdl -e " + bench;
+    QString cmd = "ghdl -e " + optionStr + " " + bench;
 
     outedit->append(cmd);
 
@@ -529,7 +552,8 @@ void QLMainWindow::callGHDLrOnTestBench()
 
     p->setOutTextEdit(outedit);
 
-    QString cmd = "ghdl -r " + bench + " --vcd=" + bench + ".vcd";
+    QString cmd = "ghdl -r " + simoptionStr + " " + bench; // + " --vcd=" + bench + ".vcd";
+    if(!cmd.contains("--vcd=")) { cmd = cmd + " --vcd=" + bench + ".vcd"; }
 
     outedit->append(cmd);
 
